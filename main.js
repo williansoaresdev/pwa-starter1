@@ -1,12 +1,17 @@
 /**
- * Inicialização do service worker
+ * Inicialização do service worker (se o browser suportar)
+ * e somente após a página estiver devidamente carregada.
  */
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker
-        .register('sw.js')
-        .then(() => { 
-            console.log('Service Worker Registered'); 
+    /* Evento para quando a página for carregada... */
+    console.log('window.addEventListener(load) criado');
+    window.addEventListener('load', function() {
+        /* Faz o registro do service worker */
+        console.log('window.addEventListener(load) disparado');
+        navigator.serviceWorker.register('sw.js').then(() => { 
+            console.log('Service Worker Registered');
         });
+    });
 }
 
 /**
@@ -14,12 +19,18 @@ if ('serviceWorker' in navigator) {
 */
 
 (function(){
+    console.log('$(document).ready criado');
     $(document).ready(function(){
-
-        /* Put your code here... */
+        console.log('$(document).ready disparado');
         setTimeout(function(){
-            $("#lblLoading").html("Loaded. Ready!");
-        }, 500);
+            console.log('mostrar mainScreen');
+            $("#splashScreen").slideUp("normal",function(){
+                $("#mainScreen").fadeIn("normal",function(){
 
+                    /* codigo aqui... */
+
+                });
+            });
+        }, 1000);
     });
 })();

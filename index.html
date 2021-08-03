@@ -3,14 +3,11 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ffffff"/>
 
-    <!-- THEME COLOR, IMPORTANT! -->
-    <meta name="theme-color" content="#fff"/>
+    <title>PWA Starter</title>
+    <meta name="description" content="Just a PWA starter page"/>
 
-    <!-- PAGE TITLE -->
-    <title>Here your PWA page title</title>
-
-    <!-- ICONS SET, USE https://iconifier.net/ AND https://appicon.co/ -->
     <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
     <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
     <link rel="apple-touch-icon" sizes="57x57" href="img/apple-touch-icon-57x57.png" />
@@ -23,7 +20,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon-180x180.png" />
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu">
 
     <!-- Own CSS -->
     <link rel="stylesheet" href="./css/main.css">
@@ -32,11 +29,14 @@
 
   </head>
   <body>
+    
+    <div id="splashScreen">
+        Carregando...
+    </div>
 
-    <h1>Hello world, it works!</h1>
-    <p id="lblLoading" style="text-align: center;">
-        Loading...
-    </p>
+    <div id="mainScreen">
+        Pronto.
+    </div>
 
     <!-- SCRIPTS NECESSÁRIOS NA CARGA DA APLICAÇÃO -->
     <script src="jquery/jquery-1.12.4.min.js"></script>
