@@ -1,23 +1,31 @@
-var cacheName = 'x-pwa1';
+/* NOME DO CACHE, PODE IR MUDANDO NAS VERSOES INSTALADAS */
+var cacheName = 'x-pwa4';
+var OFFLINE_URL = '/pwa/offline.html';
 
-console.log('self.addEventListener(install) criado');
+/**
+ * EVENTO QUE INSTALA OS ARQUIVOS DO APP NA MAQUINA
+ */
 self.addEventListener('install', (e) => {
 
-  console.log('[Service Worker] Install');
-  console.log('e.waitUntil...');
+  console.log('==> [SERVICEWORKER.INSTALL]');
 
   e.waitUntil((async () => {
     const cache = await caches.open(cacheName);
     if (cache) {
-        
+
         /**
             NENHUM ARQUIVO NESTA LISTA PODE FALTAR...
             PRECISA EXISTIR NA HOSPEDAGEM!
         */
 
-        console.log('[Service Worker] Caching all: app shell and content');
+        console.log('==> [INSTALL.CACHE.ADDALL]');
+
+        /* VAMOS ADICIONAR SOMENTE OS FILES QUE PRECISAMOS PARA CONTROLAR */
+        /* O FUNC. OFFLINE E AS LIBS PADRÃO QUE NÃO SE ALTERAM, COMO      */
+        /* O BOOTSTRAP E O JQUERY, ALEM DE ALGUMAS IMAGENS                */
         await cache.addAll([
-          '/pwa/index.html',
+          '/pwa/bootstrap/js/bootstrap.min.js',
+          '/pwa/jquery/jquery-1.12.4.min.js',
           '/pwa/bootstrap/css/bootstrap.min.css',
           '/pwa/bootstrap/css/bootstrap.min.css.map',
           '/pwa/bootstrap/fonts/glyphicons-halflings-regular.eot',
@@ -25,8 +33,8 @@ self.addEventListener('install', (e) => {
           '/pwa/bootstrap/fonts/glyphicons-halflings-regular.ttf',
           '/pwa/bootstrap/fonts/glyphicons-halflings-regular.woff',
           '/pwa/bootstrap/fonts/glyphicons-halflings-regular.woff2',
-          '/pwa/bootstrap/js/bootstrap.min.js',
-          '/pwa/css/main.css',
+          '/pwa/img/favicon.ico',
+          '/pwa/img/nocloud1.png',
           '/pwa/img/ic_launcher_48x48.png',
           '/pwa/img/ic_launcher_72x72.png',
           '/pwa/img/ic_launcher_96x96.png',
@@ -41,35 +49,84 @@ self.addEventListener('install', (e) => {
           '/pwa/img/apple-touch-icon-144x144.png',
           '/pwa/img/apple-touch-icon-152x152.png',
           '/pwa/img/apple-touch-icon-180x180.png',
-          '/pwa/img/favicon.ico',
-          '/pwa/img/logo1.png',
-          '/pwa/jquery/jquery-1.12.4.min.js',
-          '/pwa/main.js'
+          '/pwa/img/logo1.png'
         ]);
 
+        /* VAMOS ADICIONAR A OFFLINE PAGE NO MODO RELAD        */
+        /* PARA PERMITIR SUA ATUALIZACAO QUANDO ESTIVER ONLINE */
+        await cache.add(new Request(OFFLINE_URL, { cache: "reload" }));
+
+        console.log('==> [INSTALL.CACHE.OFFLINEPAGE]');
+
     } else {
-        console.log('nao abriu o cache');
+      console.log('==> [INSTALL.CACHE.FAILTOOPEN]');
     }
     
   })());
 });
 
-console.log('self.addEventListener(fetch) criado');
+/**
+ * EVENTO QUE CARREGA OS ARQUIVOS DO CACHE E/OU
+ * DA REDE (INTERNET)
+ */
 self.addEventListener('fetch', (e) => {
-    
-    console.log('self.addEventListener(fetch) disparado');
+
+    console.log('==> [SERVICEWORKER.FETCH]');
+
+    /* IGNORAMOS REQUISICOES NAO HTTPS */
+    if(!(e.request.url.indexOf('https') === 0)){
+        return;
+    }
+
+    /* CONTROLAMOS A RESPOSTA DA REQUISICAO */
+    /* DEFININDO A RESPOSTA                 */
     e.respondWith((async () => {
-        console.log(`[Service Worker] Fetching resource: ${e.request.url}`);
-        const r = await caches.match(e.request);
-        if (r) {
-            console.log('Achou o cache... retornando seus dados');
-            return r;
+
+        /* SE ESTIVER NAVEGANDO A UMA PAGINA... */
+        if (e.request.mode === "navigate") {
+
+            console.log(`==> [FETCH.NAVIGATE TO ${e.request.url}]`);
+
+            /* TENTA BUSCAR NA INTERNET PRIMEIRO... */
+            try {
+                /* SE CONSEGUIR RETORNA O DADO DA NUVEM */
+                const networkResponse = await fetch(e.request);
+                return networkResponse;
+            } catch(error) {
+
+                console.log(`==> [FETCH.OFFLINE TO ${e.request.url}]`);
+
+                /* NAO ACHOU, ENTAO APELA PARA A PAGINA OFFLINE DO CACHE */
+                const cache = await caches.open(cacheName);
+                const cachedResponse = await cache.match(OFFLINE_URL);
+                return cachedResponse;
+            }
+
+        } else {
+            console.log(`==> [FETCH.OTHERS TO ${e.request.url}]`);
+
+            /* OUTRAS REQUISICOES SAO TRATADAS BUSCANDO PRIMEIRO */
+            /* O CACHE E DEPOIS A REDE                           */
+            const r = await caches.match(e.request);
+            if (r) {
+                console.log(`==> [FETCH.CACHED ${e.request.url}]`);
+                return r;
+            }
+
+            /* SE NAO ESTA CACHEADO, BUSCA NA REDE */
+            const response = await fetch(e.request);
+
+            /* NAO VAMOS ADD NO CACHE, PARA MANTER ATUALIZANDO */
+            /* DA REDE SEMPRE ARQUIVOS NAO MAPEADOS            */
+            //const cache = await caches.open(cacheName);
+            //if (cache) {
+            //    console.log(`==> [FETCH.PUT ${e.request.url}]`);
+            //    cache.put(e.request, response.clone());
+            //}
+
+            return response;
         }
-        const response = await fetch(e.request);
-        const cache = await caches.open(cacheName);
-        console.log(`[Service Worker] Caching new resource: ${e.request.url}`);
-        cache.put(e.request, response.clone());
-        return response;
+
     })());
 
 });

@@ -1,36 +1,41 @@
-/**
- * Inicialização do service worker (se o browser suportar)
- * e somente após a página estiver devidamente carregada.
- */
-if ('serviceWorker' in navigator) {
-    /* Evento para quando a página for carregada... */
-    console.log('window.addEventListener(load) criado');
-    window.addEventListener('load', function() {
-        /* Faz o registro do service worker */
-        console.log('window.addEventListener(load) disparado');
+window.addEventListener("load", function(event) {
+
+    console.log('==> [WINDOW.LOAD]');
+
+    /**
+     * Inicialização do service worker (se o browser suportar)
+     * e somente após a página estiver devidamente carregada.
+     */
+     if ('serviceWorker' in navigator) {
+
+        console.log("==> [HAS.SERVICEWORKER]");
         navigator.serviceWorker.register('sw.js').then(() => { 
-            console.log('Service Worker Registered');
+            console.log("==> [SERVICEWORKER.REGISTERED]");
         });
-    });
-}
 
-/**
- * Código motor da aplicação
-*/
+    } else {
+        console.log("==> [NO.SERVICEWORKER]");
+    }
 
-(function(){
-    console.log('$(document).ready criado');
-    $(document).ready(function(){
-        console.log('$(document).ready disparado');
-        setTimeout(function(){
-            console.log('mostrar mainScreen');
-            $("#splashScreen").slideUp("normal",function(){
-                $("#mainScreen").fadeIn("normal",function(){
+    /* programa mostrar a tela principal depois do lading... */
+    setTimeout(function(){
 
-                    /* codigo aqui... */
+        console.log('==> [MAINSCREEN.SHOW]');
+        $("#splashScreen").slideUp("normal",function(){
+            $("#mainScreen").fadeIn("normal",function(){
+
+                console.log('==> [MAINSCREEN.SHOWED]');
+
+                /* TESTE PARA VER SE O SCRIPT CARREGOU E ESTA FUNCIONAL */
+                $("#btnTestingMe").click(function(){
+
+                    alert('Hey, I am working.');
 
                 });
+
             });
-        }, 1000);
-    });
-})();
+        });
+
+    }, 2000);
+
+});
